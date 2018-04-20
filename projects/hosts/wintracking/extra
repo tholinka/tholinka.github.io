@@ -1,0 +1,17 @@
+# from "DisableWinTracking"'s extra domains, available here: https://github.com/10se1ucgo/DisableWinTracking/blob/3.2.0/dwt.py#L319, converted to host format
+# same warning that they give: this will probably break skype, hotmail, etc.
+0.0.0.0 fe2.update.microsoft.com.akadns.net
+0.0.0.0 s0.2mdn.net
+0.0.0.0 statsfe2.update.microsoft.com.akadns.net
+0.0.0.0 survey.watson.microsoft.com
+0.0.0.0 view.atdmt.com
+0.0.0.0 watson.microsoft.com
+0.0.0.0 watson.ppe.telemetry.microsoft.com
+0.0.0.0 watson.telemetry.microsoft.com
+0.0.0.0 watson.telemetry.microsoft.com.nsatc.net
+0.0.0.0 wes.df.telemetry.microsoft.com
+0.0.0.0 ui.skype.com
+0.0.0.0 pricelist.skype.com
+0.0.0.0 apps.skype.com
+0.0.0.0 m.hotmail.com
+0.0.0.0 s.gateway.messenger.live.com
