@@ -1,4 +1,4 @@
-# from "DisableWinTracking"'s normal domains, available here: https://github.com/10se1ucgo/DisableWinTracking/blob/3.2.0/dwt.py#L319, converted to host format
+# from "DisableWinTracking"'s normal domains, available here: https://github.com/10se1ucgo/DisableWinTracking/blob/master/dwt.py#L333, converted to host format
 0.0.0.0 a-0001.a-msedge.net
 0.0.0.0 a-0002.a-msedge.net
 0.0.0.0 a-0003.a-msedge.net

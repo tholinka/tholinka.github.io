@@ -1,4 +1,4 @@
-# from "DisableWinTracking"'s extra domains, available here: https://github.com/10se1ucgo/DisableWinTracking/blob/3.2.0/dwt.py#L319, converted to host format
+# from "DisableWinTracking"'s extra domains, available here: https://github.com/10se1ucgo/DisableWinTracking/blob/master/dwt.py#L366, converted to host format
 # same warning that they give: this will probably break skype, hotmail, etc.
 0.0.0.0 fe2.update.microsoft.com.akadns.net
 0.0.0.0 s0.2mdn.net
