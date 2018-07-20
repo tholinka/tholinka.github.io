@@ -1,2 +1,8 @@
 # seems to be used by NordVPN for unknown reasons
-collector.exceptionless.io
+0.0.0.0 collector.exceptionless.io
+
+# used by red shell spyware present in many games (https://www.reddit.com/r/Steam/comments/8pud8b/psa_red_shell_spyware_holy_potatoes_were_in_space/e0fuixl/)
+0.0.0.0 redshell.io 
+0.0.0.0 api.redshell.io
+0.0.0.0 treasuredata.com
+0.0.0.0 in.treasuredata.com
