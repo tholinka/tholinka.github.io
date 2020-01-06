@@ -8,3 +8,8 @@
 0.0.0.0 api.redshell.io
 0.0.0.0 treasuredata.com
 0.0.0.0 in.treasuredata.com
+
+# used by chinese spyware present on many samsung devices
+# https://www.reddit.com/r/Android/comments/ektg8u/chinese_spyware_preinstalled_on_all_samsung/fddnlm0/
+0.0.0.0 360.cn
+0.0.0.0 360safe.com
