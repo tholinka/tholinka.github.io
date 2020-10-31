@@ -13,18 +13,18 @@
 # you will see them accessed via {{ site.title }}, {{ site.email }}, and so on.
 # You can create any custom variable you would like, and they will be accessible
 # in the templates via {{ site.myvariable }}.
-title: Link07 Github.io Site
-email: link07@users.noreply.github.com
+title: Tyler's Github.io Site
+email: 1685504+tholinka@users.noreply.github.com
 
 description: Random project files
 baseurl: "" # the subpath of your site, e.g. /blog
 url: "" # the base hostname & protocol for your site, e.g. http://example.com
-github_username:  link07
+github_username:  tholinka
 
 # Build settings
 markdown: kramdown
 theme: jekyll-theme-cayman
-repository: link07/link07.github.io
+repository: tholinka/tholinka.github.io
 #plugins:
 #  - jekyll-feed
 
