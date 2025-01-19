@@ -24,7 +24,6 @@ systemd:
         # prevent the service from failing.
         ExecStart=/usr/bin/rpm-ostree install -y --allow-inactive vim kubelet kubeadm kubectl glances zsh
         ExecStart=/bin/touch /var/lib/%N.stamp
-        ExecStart=/bin/systemctl enable kubelet
         ExecStart=/bin/systemctl --no-block reboot
 
         [Install]
