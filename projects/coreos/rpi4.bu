@@ -7,7 +7,7 @@ systemd:
       enabled: true
       contents: |
         [Unit]
-        Description=Layer nvim with rpm-ostree
+        Description=Layer vim with rpm-ostree
         Wants=network-online.target
         After=network-online.target
         # We run before `zincati.service` to avoid conflicting rpm-ostree
@@ -22,7 +22,7 @@ systemd:
         # if the package is already installed. This is useful if the package is
         # added to the root image in a future Fedora CoreOS release as it will
         # prevent the service from failing.
-        ExecStart=/usr/bin/rpm-ostree install -y --allow-inactive nvim kubelet kubeadm kubectl glances
+        ExecStart=/usr/bin/rpm-ostree install -y --allow-inactive vim kubelet kubeadm kubectl glances
         ExecStart=/bin/touch /var/lib/%N.stamp
         ExecStart=/bin/systemctl enable kubelet
         ExecStart=/bin/systemctl --no-block reboot
@@ -56,14 +56,14 @@ storage:
           enabled=1
           gpgcheck=1
           gpgkey=https://pkgs.k8s.io/core:/stable:/v1.32/rpm/repodata/repomd.xml.key
-    # Set nvim as default editor
+    # Set vim as default editor
     # We use `zz-` as prefix to make sure this is processed last in order to
     # override any previously set defaults.
     - path: /etc/profile.d/zz-default-editor.sh
       overwrite: true
       contents:
         inline: |
-          export EDITOR=nvim
+          export EDITOR=vim
   links:
     - path: /etc/localtime
       target: ../usr/share/zoneinfo/America/Chicago
