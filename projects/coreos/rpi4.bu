@@ -31,11 +31,6 @@ systemd:
         WantedBy=multi-user.target
 storage:
   files:
-    - path: /etc/hostname
-      mode: 0644
-      contents:
-        inline: |
-          d2.dns.local
     - path: /etc/profile.d/systemd-pager.sh
       mode: 0644
       contents:
