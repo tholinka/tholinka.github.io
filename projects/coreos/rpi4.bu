@@ -22,14 +22,44 @@ systemd:
         # if the package is already installed. This is useful if the package is
         # added to the root image in a future Fedora CoreOS release as it will
         # prevent the service from failing.
-        ExecStart=/usr/bin/rpm-ostree install -y --allow-inactive vim kubelet kubeadm kubectl glances zsh
+        ExecStart=/usr/bin/rpm-ostree install -y --allow-inactive vim kubelet kubeadm kubectl zsh
         ExecStart=/bin/touch /var/lib/%N.stamp
         ExecStart=/bin/systemctl --no-block reboot
 
         [Install]
         WantedBy=multi-user.target
+    # After we have zsh, convert shell to zsh
+    - name: change-to-zsh.service
+      enabled: true
+      contents: |
+        [Unit]
+        Description=Change shell to zsh
+        ConditionPathExists=/usr/bin/zsh
+        ConditionPathExists=!/var/lib/%N.stamp
+
+        [Service]
+        Type=oneshot
+        RemainAfterExit=yes
+        ExecStart=/usr/bin/chsh -s /usr/bin/zsh tyler
+        ExecStart=/usr/bin/shsh -s /usr/bin/zsh root
+        ExecStart=/bin/touch /var/lib/%N.stamp
+
+        [Install]
+        WantedBy=multi-user.target
 storage:
   files:
+    - path: /etc/systemd/zram-generator.conf
+      mode: 0644
+      contents:
+        inline: |
+          # This config file enables a /dev/zram0 device with the default settings
+          [zram0]
+    - path: /etc/sysctl.d/kubernetes.conf
+      mode: 0644
+      overwrite: true
+      contents:
+        inline: |
+          net.ipv4.ip_forward=1
     - path: /etc/profile.d/systemd-pager.sh
       mode: 0644
       contents:
@@ -63,6 +93,56 @@ storage:
       contents:
         inline: |
           export EDITOR=vim
+    # setup root zprofile so we can sudo -s if needed
+    - path: /root/.zprofile
+      mode: 0644
+      overwrite: true
+      contents:
+        inline: |
+          source /home/tyler/.zprofile
+    # setup root zshrc so we can sudo -s if needed
+    - path: /root/.zshrc
+      mode: 0644
+      overwrite: true
+      contents:
+        inline: |
+          export ZSH_CONFIG="/home/tyler/.zsh-config"
+          echo -e "\e[36mHit \"y\" to accept the warning\e[39m"
+          source /home/tyler/.zsh-config/zshrc.zshrc
+    # install dotfiles
+    - path: /home/tyler/.config/systemd/user/dotfiles.service
+      mode: 0644
+      contents:
+        inline: |
+        [Unit]
+        Description=Install dotfiles
+        Wants=network-online.target
+        After=network-online.target
+        ConditionPathExists=!/home/tyler/.config/%N.stamp
+
+        [Service]
+        Type=oneshot
+        RemainAfterExit=yes
+        ExecStart=/usr/bin/git clone https://github.com/tholinka/dotfiles.git /home/tyler/.dotfiles --recursive
+        ExecStart=/home/tyler/.dotfiles/settings/setup.sh
+        ExecStart=/home/tyler/.dotfiles/zsh/setup.sh
+        ExecStart=/home/tyler/.dotfiles/sh/setup.sh
+        ExecStart=/bin/touch /home/tyler/.config/%N.stamp
+
+        [Install]
+        WantedBy=multi-user.target
+      user:
+        name: tyler
+      ground:
+        name: tyler
   links:
     - path: /etc/localtime
       target: ../usr/share/zoneinfo/America/Chicago
+    # run install dotfiles automatically
+    - path: /home/tyler/.config/systemd/user/default.target.wants/dotfiles.service
+      user:
+        name: tyler
+      group:
+        name: tyler
+      target: /home/tyler/.config/systemd/user/default.target.wants/dotfiles.service
+      hard: false
