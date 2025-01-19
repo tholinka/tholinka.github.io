@@ -7,7 +7,7 @@ systemd:
       enabled: true
       contents: |
         [Unit]
-        Description=Layer vim with rpm-ostree
+        Description=Layer packages with rpm-ostree
         Wants=network-online.target
         After=network-online.target
         # We run before `zincati.service` to avoid conflicting rpm-ostree
