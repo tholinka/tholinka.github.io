@@ -101,40 +101,16 @@ systemd:
 storage:
   # see https://devnonsense.com/posts/k3s-on-fedora-coreos-bare-metal/
   disks:
-    - device: /dev/disk/by-id/coreos-boot-disk
-      wipe_table: false
-      partitions:
-        - number: 4
-          label: root
-          size_mib: 8192
-          resize: true
-        - label: var # not specifying "number", so this will go after the root partition
-          size_mib: 0 # means "use the rest of the space on the disk"
     - device: /dev/sda # usb should show up as sda, sdcard shows up as mmcblk0p1
       wipe_table: false
       partitions:
         - number: 1
-          label: k3s
+          label: k8s
           size_mib: 47684 # 50 GB in MiB
         - number: 2
-          label: longhorn
+          label: storage # mount this as a raw disk in your k8s storage system
           size_mib: 0
   filesystems:
-    - path: /var
-      device: /dev/disk/by-partlabel/var
-      format: btrfs
-      mount_options:
-        - rw
-        - relatime
-        - compress=zstd:2
-        - ssd
-        - discard=async
-        - space_cache=v2
-        - autodefrag
-        - subvolid=5
-        - subvol=/
-      wipe_filesystem: false # preserve on reinstall (this is the default, but be explicit)
-      with_mount_unit: true # mount this filesystem in the real root
     - path: /var/lib/rancher/k3s
       device: /dev/disk/by-partlabel/k3s
       format: btrfs
