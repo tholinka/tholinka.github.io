@@ -50,13 +50,14 @@ systemd:
         [Install]
         WantedBy=multi-user.target
     # TODO make an agent version of this when it's required
-    - name: 'k3s-server.service'
+    - name: 'k3s.service'
       enabled: true # false because we're going to want to override this to join the cluster
       contents: |
         [Unit]
         Description=Run K3s
         Wants=network-online.target
         After=network-online.target
+        ConditionPathExists=/var/lib/rpm-ostree-install-packages.stamp
 
         [Service]
         Type=notify
@@ -86,6 +87,7 @@ systemd:
         [Unit]
         Description=Cleanup pods terminated by node shutdown
         Wants=k3s.service
+        ConditionPathExists=/var/lib/rpm-ostree-install-packages.stamp
 
         [Service]
         Type=oneshot
