@@ -228,6 +228,12 @@ storage:
           export ZSH_CONFIG="/home/tyler/.zsh-config"
           echo -e "\e[36mHit \"y\" to accept the warning\e[39m"
           source /home/tyler/.zsh-config/zshrc.zshrc
+    # disable zram
+    - path: //etc/systemd/zram-generator.conf
+      mode: 000
+      overwrite: true
+      contents:
+        inline: ''
     # install dotfiles
     - path: /home/tyler/.config/systemd/user/default.target.wants/dotfiles.service
       mode: 0644
