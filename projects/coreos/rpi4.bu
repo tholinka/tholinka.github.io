@@ -25,7 +25,7 @@ systemd:
         # prevent the service from failing.
         ExecStart=/usr/bin/rpm-ostree override remove docker-cli moby-engine containerd
         ExecStart=/usr/bin/systemctl disable docker.service docker.socket containerd.service
-        ExecStart=/usr/bin/rpm-ostree install -y --allow-inactive vim zsh k3s-selinux htop
+        ExecStart=/usr/bin/rpm-ostree install -y --allow-inactive vim zsh k3s-selinux htop iotop
         ExecStart=/bin/touch /var/lib/%N.stamp
         ExecStart=/bin/systemctl --no-block reboot
 
