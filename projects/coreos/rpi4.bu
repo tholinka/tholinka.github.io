@@ -112,7 +112,7 @@ storage:
           size_mib: 0
   filesystems:
     - path: /var/lib/rancher/k3s
-      device: /dev/disk/by-partlabel/k3s
+      device: /dev/disk/by-partlabel/k8s
       format: btrfs
       mount_options:
         - rw
