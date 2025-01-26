@@ -1,5 +1,6 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/Relativ-IT/Butane-Schemas/Release/Butane-Schema.json
 variant: fcos
-version: 1.0.0
+version: 1.6.0
 systemd:
   units:
     # Installing packages we want as a layered package with rpm-ostree
@@ -22,7 +23,9 @@ systemd:
         # if the package is already installed. This is useful if the package is
         # added to the root image in a future Fedora CoreOS release as it will
         # prevent the service from failing.
-        ExecStart=/usr/bin/rpm-ostree install -y --allow-inactive vim kubelet kubeadm kubectl zsh
+        ExecStart=/usr/bin/rpm-ostree override remove docker-cli moby-engine containerd
+        ExecStart=/usr/bin/systemctl disable docker.service docker.socket containerd.service
+        ExecStart=/usr/bin/rpm-ostree install -y --allow-inactive vim zsh k3s-selinux
         ExecStart=/bin/touch /var/lib/%N.stamp
         ExecStart=/bin/systemctl --no-block reboot
 
@@ -46,8 +49,120 @@ systemd:
 
         [Install]
         WantedBy=multi-user.target
+    # TODO make an agent version of this when it's required
+    - name: 'k3s-server.service'
+      enabled: true # false because we're going to want to override this to join the cluster
+      contents: |
+        [Unit]
+        Description=Run K3s
+        Wants=network-online.target
+        After=network-online.target
+
+        [Service]
+        Type=notify
+        EnvironmentFile=-/etc/default/%N
+        EnvironmentFile=-/etc/sysconfig/%N
+        EnvironmentFile=-/etc/systemd/system/%N.env
+        # put K3S_TOKEN=<your token> in this file, and set it so only root can read it
+        EnvironmentFile=/var/lib/rancher/k3s/token.env
+        KillMode=process
+        Delegate=yes
+        LimitNOFILE=1048576
+        LimitNPROC=infinity
+        LimitCORE=infinity
+        TasksMax=infinity
+        TimeoutStartSec=0
+        Restart=always
+        RestartSec=5s
+        ExecStartPre=-/sbin/modprobe br_netfilter
+        ExecStartPre=-/sbin/modprobe overlay
+        ExecStart=ExecStart=/usr/bin/k3s server
+
+        [Install]
+        WantedBy=multi-user.target
+    - name: 'k3s-cleanup-shutdown-pods.service'
+      enabled: true
+      contents: |
+        [Unit]
+        Description=Cleanup pods terminated by node shutdown
+        Wants=k3s.service
+
+        [Service]
+        Type=oneshot
+        Environment=KUBECONFIG=/etc/rancher/k3s/k3s.yaml
+        ExecStart=kubectl delete pods --field-selector status.phase=Failed -A --ignore-not-found=true
+        Restart=on-failure
+        RestartSec=30
+
+        [Install]
+        WantedBy=multi-user.target
 storage:
+  # see https://devnonsense.com/posts/k3s-on-fedora-coreos-bare-metal/
+  disks:
+    - device: /dev/disk/by-id/coreos-boot-disk
+      wipe_table: false
+      partitions:
+        - number: 4
+          label: root
+          size_mib: 8192
+          resize: true
+        - label: var # not specifying "number", so this will go after the root partition
+          size_mib: 0 # means "use the rest of the space on the disk"
+    - device: /dev/disk/sda # usb should show up as sda, sdcard shows up as mmcblk0p1
+      wipe_table: false
+      partitions:
+        - number: 1
+          label: k3s
+          size_mib: 47684 # 50 GB in MiB
+        - number: 2
+          label: longhorn
+          size_mib: 0
+  filesystems:
+    - path: /var
+      device: /dev/disk/by-partlabel/var
+      format: btrfs
+      mount_options:
+        - rw
+        - relatime
+        - compress=zstd:2
+        - ssd
+        - discard=async
+        - space_cache=v2
+        - autodefrag
+        - subvolid=5
+        - subvol=/
+      wipe_filesystem: false # preserve on reinstall (this is the default, but be explicit)
+      with_mount_unit: true # mount this filesystem in the real root
+    - path: /var/lib/rancher/k3s
+      device: /dev/disk/by-partlabel/k3s
+      format: btrfs
+      mount_options:
+        - rw
+        - relatime
+        - compress=zstd:2
+        - ssd
+        - discard=async
+        - space_cache=v2
+        - autodefrag
+        - subvolid=5
+        - subvol=/
+      wipe_filesystem: false
+      with_mount_unit: true
   files:
+    # thanks https://devnonsense.com/posts/k3s-on-fedora-coreos-bare-metal/
+    - path: /usr/local/bin/k3s
+      overwrite: true
+      mode: 0755
+      contents:
+        source: https://github.com/k3s-io/k3s/releases/download/v1.31.3%2Bk3s1/k3s-arm64
+    - path: /etc/rancher/k3s/kubelet.config
+      mode: 0644
+      contents:
+        inline: |
+          apiVersion: kubelet.config.k8s.io/v1beta1
+          kind: KubeletConfiguration
+          shutdownGracePeriod: 60s
+          shutdownGracePeriodCriticalPods: 10s
     - path: /etc/systemd/zram-generator.conf
       mode: 0644
       contents:
@@ -85,6 +200,17 @@ storage:
           enabled=1
           gpgcheck=1
           gpgkey=https://pkgs.k8s.io/core:/stable:/v1.32/rpm/repodata/repomd.xml.key
+    - path: /etc/yum.repos.d/rancher-k3s-common.repo
+      mode: 0644
+      contents:
+        inline: |
+          [rancher-k3s-common-stable]
+          name=Rancher K3s Common (stable)
+          baseurl=https://rpm.rancher.io/k3s/stable/common/coreos/noarch
+          enabled=1
+          gpgcheck=1
+          repo_gpgcheck=0
+          gpgkey=https://rpm.rancher.io/public.key
     # Set vim as default editor
     # We use `zz-` as prefix to make sure this is processed last in order to
     # override any previously set defaults.
@@ -114,27 +240,52 @@ storage:
       mode: 0644
       contents:
         inline: |
-        [Unit]
-        Description=Install dotfiles
-        Wants=network-online.target
-        After=network-online.target
-        ConditionPathExists=!/home/tyler/.config/%N.stamp
+          [Unit]
+          Description=Install dotfiles
+          Wants=network-online.target
+          After=network-online.target
+          ConditionPathExists=!/home/tyler/.config/%N.stamp
 
-        [Service]
-        Type=oneshot
-        RemainAfterExit=yes
-        ExecStart=/usr/bin/git clone https://github.com/tholinka/dotfiles.git /home/tyler/.dotfiles --recursive
-        ExecStart=/home/tyler/.dotfiles/settings/setup.sh
-        ExecStart=/home/tyler/.dotfiles/zsh/setup.sh
-        ExecStart=/home/tyler/.dotfiles/sh/setup.sh
-        ExecStart=/bin/touch /home/tyler/.config/%N.stamp
+          [Service]
+          Type=oneshot
+          RemainAfterExit=yes
+          ExecStart=/usr/bin/git clone https://github.com/tholinka/dotfiles.git /home/tyler/.dotfiles --recursive
+          ExecStart=/home/tyler/.dotfiles/settings/setup.sh
+          ExecStart=/home/tyler/.dotfiles/zsh/setup.sh
+          ExecStart=/home/tyler/.dotfiles/sh/setup.sh
+          ExecStart=/bin/touch /home/tyler/.config/%N.stamp
 
-        [Install]
-        WantedBy=multi-user.target
+          [Install]
+          WantedBy=multi-user.target
       user:
         name: tyler
-      ground:
+      group:
         name: tyler
+    - path: /etc/rancher/k3s/config.yaml
+      mode: 0644
+      overwrite: true
+      contents:
+        inline: |
+          kube-controller-manager-arg:
+          - "bind-address=0.0.0.0"
+          kube-proxy-arg:
+          - "metrics-bind-address=0.0.0.0"
+          kube-scheduler-arg:
+          - "bind-address=0.0.0.0"
+          etcd-expose-metrics: true
+          tls-san:
+          - 192.168.1.3
+
+          cluster-init: true
+          snapshotter: btrfs
+          secrets-encryption: true
+          cluster-cidr: 10.42.0.0/16,2001:cafe:42::/56
+          service-cidr: 10.43.0.0/16,2001:cafe:43::/112
+          flannel-ipv6-masq: true
+          disable:
+          - traefik
+          - servicelb
+          - local-storage
   links:
     - path: /etc/localtime
       target: ../usr/share/zoneinfo/America/Chicago
