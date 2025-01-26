@@ -108,11 +108,26 @@ storage:
           label: k8s
           size_mib: 47684 # 50 GB in MiB
         - number: 2
-          label: storage # mount this as a raw disk in your k8s storage system
+          label: storage
           size_mib: 0
   filesystems:
     - path: /var/lib/rancher/k3s
       device: /dev/disk/by-partlabel/k3s
+      format: btrfs
+      mount_options:
+        - rw
+        - relatime
+        - compress=zstd:2
+        - ssd
+        - discard=async
+        - space_cache=v2
+        - autodefrag
+        - subvolid=5
+        - subvol=/
+      wipe_filesystem: false
+      with_mount_unit: true
+    - path: /var/lib/longhorn
+      device: /dev/disk/by-partlabel/storage
       format: btrfs
       mount_options:
         - rw
