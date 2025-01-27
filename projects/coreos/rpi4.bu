@@ -113,32 +113,12 @@ storage:
   filesystems:
     - path: /var/lib/rancher/k3s
       device: /dev/disk/by-partlabel/k8s
-      format: btrfs
-      mount_options:
-        - rw
-        - relatime
-        - compress=zstd:2
-        - ssd
-        - discard=async
-        - space_cache=v2
-        - autodefrag
-        - subvolid=5
-        - subvol=/
+      format: ext4
       wipe_filesystem: false
       with_mount_unit: true
     - path: /var/lib/longhorn
       device: /dev/disk/by-partlabel/storage
-      format: btrfs
-      mount_options:
-        - rw
-        - relatime
-        - compress=zstd:2
-        - ssd
-        - discard=async
-        - space_cache=v2
-        - autodefrag
-        - subvolid=5
-        - subvol=/
+      format: ext4
       wipe_filesystem: false
       with_mount_unit: true
   files:
@@ -156,12 +136,6 @@ storage:
           kind: KubeletConfiguration
           shutdownGracePeriod: 60s
           shutdownGracePeriodCriticalPods: 10s
-    - path: /etc/systemd/zram-generator.conf
-      mode: 0644
-      contents:
-        inline: |
-          # This config file enables a /dev/zram0 device with the default settings
-          [zram0]
     - path: /etc/sysctl.d/kubernetes.conf
       mode: 0644
       overwrite: true
@@ -228,12 +202,6 @@ storage:
           export ZSH_CONFIG="/home/tyler/.zsh-config"
           echo -e "\e[36mHit \"y\" to accept the warning\e[39m"
           source /home/tyler/.zsh-config/zshrc.zshrc
-    # disable zram
-    - path: //etc/systemd/zram-generator.conf
-      mode: 000
-      overwrite: true
-      contents:
-        inline: ''
     # install dotfiles
     - path: /home/tyler/.config/systemd/user/default.target.wants/dotfiles.service
       mode: 0644
@@ -279,7 +247,7 @@ storage:
           - 192.168.1.7
 
           cluster-init: true
-          snapshotter: btrfs
+          #snapshotter: btrfs
           secrets-encryption: true
           cluster-cidr: 10.42.0.0/16,2001:cafe:42::/56
           service-cidr: 10.43.0.0/16,2001:cafe:43::/112
