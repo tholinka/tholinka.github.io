@@ -268,31 +268,30 @@ storage:
       contents:
         inline: |
           # for control plane nodes
-          # kube-controller-manager-arg:
-          # - "bind-address=0.0.0.0"
-          # kube-proxy-arg:
-          # - "metrics-bind-address=0.0.0.0"
-          # kube-scheduler-arg:
-          # - "bind-address=0.0.0.0"
-          # etcd-expose-metrics: true
-          # tls-san:
-          # - 192.168.1.3
-
-          # cluster-init: true
-          # server: https://192.168.1.3:6443
-          # snapshotter: btrfs
-          # secrets-encryption: true
-          # cluster-cidr: 10.42.0.0/16,2001:cafe:42::/56
-          # service-cidr: 10.43.0.0/16,2001:cafe:43::/112
-          # flannel-ipv6-masq: true
-          # disable:
-          # - traefik
-          # - servicelb
-          # - local-storage
+          kube-controller-manager-arg:
+          - "bind-address=0.0.0.0"
           kube-proxy-arg:
           - "metrics-bind-address=0.0.0.0"
-          server: https://192.168.1.3:6443
+          kube-scheduler-arg:
+          - "bind-address=0.0.0.0"
+          etcd-expose-metrics: true
+          tls-san:
+          - 192.168.1.7
+
+          cluster-init: true
           snapshotter: btrfs
+          secrets-encryption: true
+          cluster-cidr: 10.42.0.0/16,2001:cafe:42::/56
+          service-cidr: 10.43.0.0/16,2001:cafe:43::/112
+          flannel-ipv6-masq: true
+          disable:
+          - traefik
+          - servicelb
+          - local-storage
+          # kube-proxy-arg:
+          # - "metrics-bind-address=0.0.0.0"
+          # server: https://192.168.1.3:6443
+          # snapshotter: btrfs
   links:
     - path: /etc/localtime
       target: ../usr/share/zoneinfo/America/Chicago
