@@ -351,6 +351,7 @@ serverfault.com
 
 # www.spotify.com
 weblb-wg.dual-gslb.spotify.com
+wl.spotify.com
 
 # www.howtogeek.com
 www.howtogeek.com
@@ -496,3 +497,6 @@ click.e.progressive.com
 app.progressive.com
 
 seedpool.org
+
+# outlook, teams on mobile
+mobile.pipe.aria.microsoft.com
