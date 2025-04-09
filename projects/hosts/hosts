@@ -13,3 +13,7 @@
 # https://www.reddit.com/r/Android/comments/ektg8u/chinese_spyware_preinstalled_on_all_samsung/fddnlm0/
 0.0.0.0 360.cn
 0.0.0.0 360safe.com
+
+
+# conditional forwarding loop
+^.*p\.(([0-9]{1,3}\.){4})in-addr\.arpa$
