@@ -17,3 +17,5 @@
 
 # conditional forwarding loop
 0.0.0.0 lb._dns-sd._udp.0.1.168.192.in-addr.arpa
+0.0.0.0 db._dns-sd._udp.0.1.168.192.in-addr.arpa
+0.0.0.0 b._dns-sd._udp.0.1.168.192.in-addr.arpa
