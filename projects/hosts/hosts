@@ -13,9 +13,3 @@
 # https://www.reddit.com/r/Android/comments/ektg8u/chinese_spyware_preinstalled_on_all_samsung/fddnlm0/
 0.0.0.0 360.cn
 0.0.0.0 360safe.com
-
-
-# conditional forwarding loop
-0.0.0.0 lb._dns-sd._udp.0.1.168.192.in-addr.arpa
-0.0.0.0 db._dns-sd._udp.0.1.168.192.in-addr.arpa
-0.0.0.0 b._dns-sd._udp.0.1.168.192.in-addr.arpa
